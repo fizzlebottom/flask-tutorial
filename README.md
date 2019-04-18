@@ -16,13 +16,13 @@ Python 3 comes bundled with the **[venv](https://docs.python.org/3/library/venv.
 Create a project folder and a `venv` folder within:
 >mkdir myProject <br>
 >cd myProject <br>
->py -3 -m venv virtualEnv
+>py -3 -m venv venv
 
 ### Activate the environment
 Before you work on your project, activate the corresponding environment:
 
 On Windows:
->virtualEnv\Scripts\activate
+>venv\Scripts\activate
 
 Your shell prompt will change to show the name of the activated venv.
 
