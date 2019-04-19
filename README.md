@@ -198,3 +198,37 @@ def create_app(test_config=None):
 4. [os.markdirs()](https://docs.python.org/3/library/os.html#os.makedirs) ensures that
 [app.instance_path](http://flask.pocoo.org/docs/1.0/api/#flask.Flask.instance_path) exists. Flask doesn't create the instance folder automatically, but it needs to bre created because your project will create the SQLite db file there.
 5. [@app.route()](http://flask.pocoo.org/docs/1.0/api/#flask.Flask.route) creates a simple route so you can see the application working before getting into the rest of the tutorial. It creates a connections between the URL `/hello` and a function that returns a response, the string `Hello, World!` in this case.
+
+### Run the Application
+
+Now we can run the application using the `flask` command. From terminal, tell Flask where to find your application, then run it in development mode.
+
+Dev mode shows an interactive debugger whenever a page raises an exception, and restarts the server whenever you make changes to the code. You can leave it running and just reload the browser page as you follow the tutorial.
+
+For Linux and Mac:
+>export FLASK_APP=flaskr <br />
+>export FLASK_ENV=development <br />
+>flask run
+
+For Windows cmd, use `set` instead of `export`:
+>set FLASK_APP=flaskr <br />
+>set FLASK_ENV=development <br />
+>flask run
+
+For Windows Powershell, use `$env:` instead of `export`:
+>$env:FLASK_APP = "flaskr" <br />
+>$env:FLASK_ENV = "development" <br />
+>flask run
+
+You'll see output similar to this:
+>\* Serving Flask app "flaskr" <br />
+>\* Environment: development <br />
+>\* Debug mode: on <br />
+>\* Running on http://127.0.0.1:5000/ (Press CTRL+C to quit) <br />
+>\* Restarting with stat <br />
+>\* Debugger is active! <br />
+>\* Debugger PIN: 855-212-761
+
+Visit [http://127.0.0.1:5000/hello](http://127.0.0.1:5000/hello) in a web browser and you should see the "Hello, World!" message. Congrats! You're now running your Flask web application!
+
+## Define and Access the Database
