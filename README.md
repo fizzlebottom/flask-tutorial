@@ -278,3 +278,83 @@ def close_db(e=None):
 [sqlite3.Row](https://docs.python.org/3/library/sqlite3.html#sqlite3.Row) tells the connection to return rows that behave like dicts. This allows accessing the columns by name.
 
 `close_db` checks if a connection was created by checking if `g.db` was set. If the connection exists, it is closed. Further down you will tell your application about the `close_db` function in the application factory so that it is called after each request.
+
+### Create the Tables
+
+In SQLite, data is stored in *tables* and *columns*. These need to be created before you can store and retrieve data. Flaskr will store users in the `user` table, and posts in the `post` table. Create a file with the SQL commands needed to create empty tables:
+
+`flaskr/schema.sql`
+```sql
+DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS post;
+
+CREATE TABLE user (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL
+);
+
+CREATE TABLE post (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    author_id INTEGER NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    FOREIGN KEY (author_id) REFERENCES user (id)
+);
+```
+
+Add the Python functions that will run these SQL commands to the `db.py` file:
+
+`flaskr/db.py`
+```python
+def init_db():
+    db = get_db()
+
+    with current_app.open_resource('schema.sql') as f:
+        db.executescript(f.read().decode('utf8'))
+
+@click.command('init-db')
+@with_appcontext
+def init_db_command():
+    """Clear the existing data and create new tables"""
+    init_db()
+    click.echo('Initialized the database.')
+```
+
+[open_resource()](http://flask.pocoo.org/docs/1.0/api/#flask.Flask.open_resource) opens a file relative to the `flaskr` package, which is userful since you won't necessarily know where that location is when deploying the application later. `get_db` returns a database connection, which is used to execute the commands read from the file.
+
+[click.command()](http://click.pocoo.org/api/#click.command) defines a command line command called `init-db` that calls the `init-db` function and shows a success message to the user. You can read [Command Line Interface](http://flask.pocoo.org/docs/1.0/cli/#cli) to learn more about writing commands.
+
+### Register with the Application
+
+The `close_db` and `init_db_command` functions need to be registered with the application instance, otherwise they won't be used by the application. However, since you're using a factory function, that instance isn't available when writing the functions. Instead, write a function that takes an application and does the registration.
+
+`flaskr/db.py`
+```python
+def init_app(app):
+    app.teardown_appcontext(close_db)
+    app.cli.add_command(init_db_command)
+```
+
+[app.teardown_appcontext()](http://flask.pocoo.org/docs/1.0/api/#flask.Flask.teardown_appcontext) tells Flask to call that function when cleaning up after returning the response.
+
+[app.cli.add_command()](http://click.pocoo.org/api/#click.Group.add_command) adds a new command that can be called with the `flask` command.
+
+Import and call this function from the factory. Place the new code at the end of the factory function before return the app.
+
+`flaskr/__init__.py`
+```python
+def create_app():
+    app = ...
+    # existing code omitted
+
+    from . import db
+    db.init_app(app)
+
+    return app
+```
+
+### Initialize the Database File
+
+Now that `init-db` has been registered with the app, it can be called using the `flask` command, similar to the `run` command from the previous page.
