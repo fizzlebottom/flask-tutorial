@@ -358,3 +358,15 @@ def create_app():
 ### Initialize the Database File
 
 Now that `init-db` has been registered with the app, it can be called using the `flask` command, similar to the `run` command from the previous page.
+
+**Note:**
+
+If you’re still running the server from the previous page, you can either stop the server, or run this command in a new terminal. If you use a new terminal, remember to change to your project directory and activate the env as described in [Activate the environment](http://flask.pocoo.org/docs/1.0/installation/#install-activate-env). You’ll also need to set FLASK_APP and FLASK_ENV as shown on the previous page.
+
+Run the `init-db` command:
+```cmd
+flask init-db
+Initialized the database.
+```
+
+There will now be a `flaskr.sqlite` file in the `instance` folder in your project.
