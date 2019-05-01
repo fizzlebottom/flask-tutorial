@@ -414,3 +414,65 @@ def create_app():
 ```
 
 The authentication blueprint will have views to register new users and to log in and log out.
+
+### The First View: Register
+
+When the user visits the `/auth/register` URL, the `register` view will return HTML with a form for them to fill out. When they submit the form, it will validate their input and either show the form again with an error message or create the new user and go to the login page.
+
+For now you will just write the view code. Later, you'll write templates to generate the HTML form.
+
+`flaskr/auth.py`
+```python
+@bp.route('/register', methods=('GET', 'POST'))
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        db = get_db()
+        error = None
+
+        if not username:
+            error = 'Username is required.'
+        elif not password:
+            error = 'Password is required.'
+        elif db.execute(
+            'SELECT id FROM user WHERE username = ?', (username,)
+        ).fetchone() is not None:
+            error = 'User {} is already registered.'.format(username)
+        
+        if error is None:
+            db.execute(
+                'INSERT INTO user (username, password) VALUES (?, ?)',
+                (username, generate_password_hash(password))
+            )
+            db.commit()
+            return redirect(url_for('auth.login'))
+
+        flash(error)
+
+    return render_template('auth/register.html')
+```
+
+Here's what the `register` view function is doing:
+
+1. [@bp.route](http://flask.pocoo.org/docs/1.0/api/#flask.Blueprint.route) associates the URL `/register` with the `register` view function. When Flask receives a request to `/auth/register` it will call the `register` view and use the return value as the response.
+
+2. If the user submitted the form, [request.method](http://flask.pocoo.org/docs/1.0/api/#flask.Request.method) will be `POST`. In this case, start validating the input.
+
+3. [request.form](http://flask.pocoo.org/docs/1.0/api/#flask.Request.form) is a special type of [dict](https://docs.python.org/3/library/stdtypes.html#dict) mapping submitted form keys and values. The user will input their `username` and `password`.
+
+4. Validate that `username` and `password` are not empty.
+
+5. Valdate that `username` is not already registered by querying the database and checking if a result is returned. [db.execute](https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.execute) takes a SQL query with `?` placeholders for any user input, and a tuple of values to replace the placeholders with. The database library will take care of escaping the values so you are not vulnerable to a *SQL injection attack*.
+
+    [fetchone()](https://docs.python.org/3/library/sqlite3.html#sqlite3.Cursor.fetchone) returns one row from the query. If the query returned no results, it returns `None`. Later, [fetchall()](https://docs.python.org/3/library/sqlite3.html#sqlite3.Cursor.fetchall) is used, which returns a list of all results.
+
+6. If validation succeeds, insert the new user data into the database. For security, passwords should never be stored in the db directly. Instead, [generate_password_hash()](http://werkzeug.pocoo.org/docs/utils/#werkzeug.security.generate_password_hash) is used to securely has the password, and that hash is stored. Since this query modifies the data, [db.commit()](https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.commit) needs to be called afterwards to save the changes.
+
+7. After storing the user, they are redirected to the login page. [url_for()](http://flask.pocoo.org/docs/1.0/api/#flask.url_for) generates the URL for the login view based on its name. This is preferable to writing the URL directly as it allows you to change the URL later without changing all code that links to it. [redirect()](http://flask.pocoo.org/docs/1.0/api/#flask.redirect) generates a redirect response to the generated URL.
+
+8. If validation fails, the error is shown to the user. [flash()](http://flask.pocoo.org/docs/1.0/api/#flask.flash) stores messages that can be retrieved when rendering the template.
+
+9. When the user initially navigates to `auth/register`, or there was a validation error, an HTML page with the registration form should be shown. [render_template()](http://flask.pocoo.org/docs/1.0/api/#flask.render_template) will render a template containing the HTML, which you'll write in the next step of the tutorial
+
+### Login
