@@ -476,3 +476,61 @@ Here's what the `register` view function is doing:
 9. When the user initially navigates to `auth/register`, or there was a validation error, an HTML page with the registration form should be shown. [render_template()](http://flask.pocoo.org/docs/1.0/api/#flask.render_template) will render a template containing the HTML, which you'll write in the next step of the tutorial
 
 ### Login
+
+This view follows the same pattern as the `register` view above.
+
+`flaskr/auth.py`
+
+```python
+@bp.route('/login', methods=('GET', 'POST'))
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        db = get_db()
+        error = None
+        user = db.execute(
+            'SELECT * FROM user WHERE username = ?', (username,)
+        ).fetchone()
+
+        if user is None:
+            error = 'Incorrect username.'
+        elif not check_password_hash(user['password'], password):
+            error = 'Incorrect password'
+
+        if error is None:
+            session.clear()
+            session['user_id'] = user['id']
+            return redirect(url_for('index'))
+        
+        flash(error)
+
+    return render_template('auth/login.html')
+```
+
+There are a few differences from the `register` view:
+
+1. The user is queried first and stored in a variable for later use.
+
+2. [check_password_hash()](http://werkzeug.pocoo.org/docs/utils/#werkzeug.security.check_password_hash) hashes the submitted password in the same way as the stored hash and securely compares them. If they match, the password is valid.
+
+3. [session](http://flask.pocoo.org/docs/1.0/api/#flask.session) is a [dict](https://docs.python.org/3/library/stdtypes.html#dict) that stores data across requests. When validation succeeds, the user's `id` is stored in a new session. The data is stored in a *cookie* that is sent to the browser, and the browser then sends it back with subsequent requests. Flask securely *signs* the data so that it can't be tampered with.
+
+Now that the user's `id` is stored in the [session](http://flask.pocoo.org/docs/1.0/api/#flask.session), it will be available on subsequent requests. At the beginning of each request, if a user is logged in their information should be loaded and made available to other views.
+
+`flaskr/auth.py`
+
+```python
+@bp.before_app_request
+def load_logged_in_user():
+    user_id = session.get('user_id')
+
+    if user_id is None:
+        g.user = None
+    else:
+        g.user = get_db().execute(
+            'SELECT * FROM user WHERE id = ?', (user_id,)
+        ).fetchone()
+```
+
+[bp.before_app_request()](http://flask.pocoo.org/docs/1.0/api/#flask.Blueprint.before_app_request) registers a function that runs before the view function, no matter what URL is requested. `load_logged_in_user` checks if a user id is stored in the [session](http://flask.pocoo.org/docs/1.0/api/#flask.session) and gets that user's data from the database, storing it on [g.user](http://flask.pocoo.org/docs/1.0/api/#flask.g), which lasts for the length of the request. If there is no user id, or if the id doesn't exist, `g.user` will be `None`.
