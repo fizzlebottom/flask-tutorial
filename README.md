@@ -547,3 +547,29 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 ```
+
+### Require Authentication in Other Views
+
+Creating, editing, and deleting blog posts will require a user to be logged in. A *decorator* can be used to check this for each view it's applied to.
+
+`flaskr/auth.py`
+
+```python
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))
+
+        return view(**kwargs)
+```
+
+This decorator returns a new view function that wraps the original view it's appied to. The new function checks if a user is loaded and redirects to the login page otherwise. If a user is loaded the original view is called and continues normally. You'll use this decorator when writing the blog views.
+
+### Endpoints and URLs
+
+The [url_for()](http://flask.pocoo.org/docs/1.0/api/#flask.url_for) function generates the URL to a view based on a name and arguments. The name associated with a view is also called the *endpoint*, and by default it's the same as the name of the view function.
+
+For example, the `hello()` view that was added to the app factory earlier in the tutorial has the name `'hello'` and can be linked to with `url_for('hello')`. If it took an argument, which you'll see later, it would be linked to using `url_for('hello'), who='World'`.
+
+When using a blueprint, the name of the blueprint is prepended to the name of the functions, so the endpoint for the `login` function you wrote above is `'auth.login'` because you added it to the `'auth'` blueprint.
