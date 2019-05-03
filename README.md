@@ -534,3 +534,16 @@ def load_logged_in_user():
 ```
 
 [bp.before_app_request()](http://flask.pocoo.org/docs/1.0/api/#flask.Blueprint.before_app_request) registers a function that runs before the view function, no matter what URL is requested. `load_logged_in_user` checks if a user id is stored in the [session](http://flask.pocoo.org/docs/1.0/api/#flask.session) and gets that user's data from the database, storing it on [g.user](http://flask.pocoo.org/docs/1.0/api/#flask.g), which lasts for the length of the request. If there is no user id, or if the id doesn't exist, `g.user` will be `None`.
+
+### Logout
+
+To log out, you need to remove the user id from the [session](http://flask.pocoo.org/docs/1.0/api/#flask.session). Then `load_logged_in_user` won't load a user on subsequent requests.
+
+`flaskr/auth.py`
+
+```python
+@bp.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+```
