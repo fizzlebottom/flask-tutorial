@@ -37,3 +37,32 @@ def register():
         flash(error)
 
     return render_template('auth/register.html')
+
+@bp.route('/login', methods=('GET', 'POST'))
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        db = get_db()
+        error = None
+        # The user is queried first and stored in a variable for later use
+        user = db.execute(
+            'Select * FROM user WHERE username = ?', (username,)
+        ).fetchone()
+
+        if user is None:
+            error = 'Incorrect username.'
+            # Hash the submitted password and securely compare
+        elif not check_password_hash(user['password'], password):
+            error = 'Incorrect password'
+
+        if error is None:
+            # session is a dict that stores data across requests. Data is stored in a cookie
+            # that is sent to the browser
+            session.clear()
+            session['user_id'] = user['id']
+            return redirect(url_for('index'))
+
+        flash(error)
+
+    return render_template('auth/login.html')
