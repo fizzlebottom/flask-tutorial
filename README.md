@@ -573,3 +573,40 @@ The [url_for()](http://flask.pocoo.org/docs/1.0/api/#flask.url_for) function gen
 For example, the `hello()` view that was added to the app factory earlier in the tutorial has the name `'hello'` and can be linked to with `url_for('hello')`. If it took an argument, which you'll see later, it would be linked to using `url_for('hello'), who='World'`.
 
 When using a blueprint, the name of the blueprint is prepended to the name of the functions, so the endpoint for the `login` function you wrote above is `'auth.login'` because you added it to the `'auth'` blueprint.
+
+## Templates
+
+You've written the authentication views for your application, but if you're running the server and try to go to any of the URLs, you'll see a `TemplateNotFound` error. That's because the views are calling [render_template()](http://flask.pocoo.org/docs/1.0/api/#flask.render_template), but you haven't written the templates yet. The template files will be stored in the `templates` directory inside the `flaskr` package.
+
+Templates are files that contain static data as well as placeholders for dynamic ata. A template is rendered with specific data to produce a final document. Flask uses the [Jinja](http://jinja.pocoo.org/docs/templates/) template library to render templates.
+
+In you application, you will use templates to render [HTML](https://developer.mozilla.org/docs/Web/HTML) which will display in the user's browser. In Flask, Jinja is configured to *autoescape* any data that is rendered in HTML templates. This means that it's safe to render user input; any characters they've entered the could mess with the HTML, such as `<` and `>` will be *escaped* with *safe* values that look the same in the browser but don't cause unwanted effects.
+
+Jinja looks and behaves mostly like Python. Special delimiters are used to distinguish Jinja syntax from the static data in the template. Anything between `{{` and `}}` is an expression that will be output to the final document. `{%` and `%}` denotes a control flow statement like `if` and `for`. Unlike Python, blocks are denoted by start and end tags rather than indentation since static text within a block could change indentation.
+
+### The Base Layout
+
+Each page in the application will have the same basic layout around a different body. Instead of writing the entire HTML structure in each template, each template will *extend* a base template and override specific sections.
+
+`flaskr/templates/base.html`
+```html
+<!doctype html>
+<title>{% block title %}{% endblock %} - Flaskr</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<nav>
+    <h1>Flaskr</h1>
+    <ul>
+        {% if g.user $}
+            <li><span>{{ g.user['username'] }}</span>
+            <li><a href="{{ url_for('auth.logout') }}">Log out</a>
+        {% else %}
+            <li><a href="{{ url_for('auth.register') }}">Register</a>
+            <li><a href="{{ url_for('auth.login') }}">Log In</a>
+        {% endif %}
+    </ul>
+</nav>
+<section class="content">
+    <header>
+        {% block header %}{% endblock %}
+    </header>
+```
