@@ -88,3 +88,14 @@ def load_logged_in_user():
 def logout():
     session.clear()
     return redirect(url_for('index'))
+
+''' Decorator to return a new view function that wraps the original to check if a user
+    is loaded and redirects to the login page otherwise. If a user is loaded, the orginal
+    view is called and continues. '''
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))
+
+        return view(**kwargs)
