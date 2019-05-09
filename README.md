@@ -589,6 +589,7 @@ Jinja looks and behaves mostly like Python. Special delimiters are used to disti
 Each page in the application will have the same basic layout around a different body. Instead of writing the entire HTML structure in each template, each template will *extend* a base template and override specific sections.
 
 `flaskr/templates/base.html`
+
 ```html
 <!doctype html>
 <title>{% block title %}{% endblock %} - Flaskr</title>
@@ -609,4 +610,25 @@ Each page in the application will have the same basic layout around a different 
     <header>
         {% block header %}{% endblock %}
     </header>
+    {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+        {% endfor %}
+        {% block content %}{% endblock %}
+</section>
 ```
+
+[g](http://flask.pocoo.org/docs/1.0/api/#flask.g) is automatically available in templates. Based on if `g.user` is set (from `load_logged_in_user`), either the username and a logout link are displayed, otherwise links to register and log in are displayed. [url_for()](http://flask.pocoo.org/docs/1.0/api/#flask.url_for) is also automagically available, and is used to generate URLs to views instead of writing them out manually.
+
+AFter the page title, and before the content, the template loops over each message returned by [get_flashed_messages()](http://flask.pocoo.org/docs/1.0/api/#flask.get_flashed_messages) is also automatically available, and is used to generate URLs to views instead of writing them out manually.
+
+After the page title, and before the content, the template loops over each message returned by [get_flashed_messages()](http://flask.pocoo.org/docs/1.0/api/#flask.get_flashed_messages). You used [flash()](http://flask.pocoo.org/docs/1.0/api/#flask.flash) in the views to show error messages, and this is the code that will display them.
+
+There are three blocks defined here that will be overridden in the other templates:
+
+1. `{% block title %}` will change the title displayed in the browser's tab and window title.
+
+2. `{% block header %}`is similar to `title` but will change the title displayed on the page.
+
+3. `{% block content %}` is where the content of each page goes, such as the login form or a blog post.
+
+The base template is directly in the `templates` directory. To keep the others organized, the templates for a blueprint will be placed in a directory with the same name as the blueprint.
