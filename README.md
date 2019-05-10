@@ -660,3 +660,35 @@ The base template is directly in the `templates` directory. To keep the others o
 A useful pattern used here is to place `{% block title %}` inside `{% block header %}`. This will set the title block and then output the value of it into the header block, so that both the window and page share the same title without writing it twice.
 
 The `input` tags are using the `required` attribute here. This tells the browser not to submit the form until those fields are filled in. If the user is using an older browser that doesn't support that attribute, or if they are using something besides a browser to make requests, you still want to validate the data in the Flask view. It's important to always fully validate the data on the server, even if the client does some validation as well.
+
+### Log In
+
+This is identical to the register template except for the title and submit button.
+
+`flaskr/templates/auth/login.html`
+
+```html
+{% extends 'base.html %}
+
+{% block header %}
+    <h1>{% block title %}Log In{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <label for="username">Username</label>
+        <input name="username" id="username" required>
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" required>
+        <input type="submit" value="Log In">
+    </form>
+{% endblock %}
+```
+
+### Register A User
+
+Now that the authentication templates are written, you can register a user. Make sure the server is still running (`flask run` if it's not), then go to [http://127.0.0.1:5000/auth/register](http://127.0.0.1:5000/auth/register).
+
+Try click the "Register" button without filling out the form and see that the browser shows an error message. Try removing the `required` attributes from the `register.html` template and click "Register" again. Instead of the browser showing an error, the page wil reload and the error from [flash()](http://flask.pocoo.org/docs/1.0/api/#flask.flash) in the view will be shown.
+
+Fill out a username and password and you'll be redirected to the login page. Try entering an incorrect username, or the correct username and incorrect password. If you log in you'll get an error because there's no `index` view to redirect to yet.
