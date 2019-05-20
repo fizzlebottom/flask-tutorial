@@ -689,7 +689,7 @@ This is identical to the register template except for the title and submit butto
 
 Now that the authentication templates are written, you can register a user. Make sure the server is still running (`flask run` if it's not), then go to [http://127.0.0.1:5000/auth/register](http://127.0.0.1:5000/auth/register).
 
-Try click the "Register" button without filling out the form and see that the browser shows an error message. Try removing the `required` attributes from the `register.html` template and click "Register" again. Instead of the browser showing an error, the page wil reload and the error from [flash()](http://flask.pocoo.org/docs/1.0/api/#flask.flash) in the view will be shown.
+Try click the "Register" button without filling out the form and see that the browser shows an error message. Try removing the `required` attributes from the `register.html` template and click "Register" again. Instead of the browser showing an error, the page will reload and the error from [flash()](http://flask.pocoo.org/docs/1.0/api/#flask.flash) in the view will be shown.
 
 Fill out a username and password and you'll be redirected to the login page. Try entering an incorrect username, or the correct username and incorrect password. If you log in you'll get an error because there's no `index` view to redirect to yet.
 
