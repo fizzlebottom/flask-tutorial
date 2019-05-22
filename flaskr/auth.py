@@ -1,7 +1,14 @@
 import functools
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, 
+    flash, 
+    g, 
+    redirect, 
+    render_template, 
+    request, 
+    session, 
+    url_for,
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -21,10 +28,11 @@ def register():
             error = 'Username is required.'
         elif not password:
             error = 'Password is required.'
-        elif db.execute(
-            'SELECT id FROM user WHERE username = ?', (username,)
-        ).fetchone() is not None:
-            error = 'User {} is already registered.'.format(username)
+        elif (
+            db.execute('SELECT id FROM user WHERE username = ?', (username,)).fetchone()
+            is not None
+        ):
+            error = 'User {0} is already registered.'.format(username)
 
         if error is None:
             db.execute(
