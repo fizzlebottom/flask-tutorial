@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Posts{% endblock %}</h1>
+    {% if g.user %} <!-- If a user is logged in, add link to "create" view -->
+        <a class="action" href="{{ url_for('blog.create') }}">New</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% for post in posts %}
+        <article class="post">
+            <header>
+                <div>
+                    <h1>{{ post['title'] }}</h1> <!-- Display blog post author and date created -->
+                    <div class="about">by {{ post['username'] }} on {{ post['created'].stfftime('%Y-%m-%d') }}</div>
+                </div>
+                {% if g.user['id'] == post['author_id'] %} <!-- If the user is the blog post author, add link to "update" view  -->
+                    <a class="action" href="{{ url_for('blog.update', id=post['id']) }}">Edit</a>
+                {% endif %}
+            </header>
+            <p class="body">{{ post['body'] }}</p> <!-- Display blog post -->
+        </article>
+        {% if not loop.last %} <!-- Jinja variable to display line between posts (unless last post) to visually separate them -->
+            <hr>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
